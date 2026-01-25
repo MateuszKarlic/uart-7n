@@ -1,0 +1,49 @@
+This is a free and OpenSource UART implementation I made in my spare time.
+
+My main motivation was learning about Verilog and Digital Design.
+After working a bit around Design Verification field, I decided to try my hands at creating a simple circuit of my own.
+
+The device will be tested both in simulation (Icarus Verilog and Verilator) as well as wonderful and affordable Sipeed Tang Nano 20k FPGA board.
+Additionally, I'd like to leverage Co-Simulation capabilities of Renode Framework, to develop a driver for the module.
+
+## Repo structure
+
+Right now there are the following directories:
+* `src` - contains Verilog sources of the UART module
+* `tb` - contains SystemVerilog testbenches (design verification)
+* `impl` - FPGA-specific implementation details (e.g. I/O constraints I used)
+
+## Verification
+
+My goal is to use pure SystemVerilog testbenches for verification, without any frameworks and additional tools.
+There is no need for complications as the design is very human.
+Just a simple bench with asserts is my goal.
+
+### Testpoints
+
+Table with testpoints, and what they cover will be here.
+
+## Roadmap
+
+A very rough roadmap of features I want to introduce.
+Each feature will be paired with a testbench.
+
+[] Uart Receive module
+[] Uart Transmit module
+[] Transmit/Receive FIFO
+[] Reception and Transmission error detection
+[] Programmable baud rate generator
+[] APB/other bus integration
+[] Automatic flow control lines
+[] Zephyr driver
+
+## Integration
+
+You might want to integrate the RTL with your own designs.
+Below is the table of top level signals, and how to connect them.
+
+WIP
+
+## Design
+
+Description of the internals will be here
