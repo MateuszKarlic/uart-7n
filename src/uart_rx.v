@@ -21,14 +21,14 @@ module uart_rx # (
     input wire parity_en_i,
     // Select parity type (odd, even)
     input wire parity_sel_i,
-    // Stop bits - 0 for one, 1 for two
-    input wire stop_bits_i,
 
     // Output decoded data byte
     output reg[7:0] data_o,
 
     // Reception in progress
     output wire busy_o,
+    // Data is ready to read out
+    output reg data_ready_o,
 
     // Error signals
     output wire parity_err_o,
@@ -58,7 +58,6 @@ reg[`U_STATE_BITS-1:0] next_state;
 reg sampled_data_i;
 
 reg[U_CNT_REG_LEN-1:0] cycle_cnt;
-//reg[U_CNT_REG_LEN-1:0] next_cycle_cnt;
 
 reg[U_CNT_REG_LEN-1:0] cycles_per_bit_cmp_val = U_CYCLES_PER_BIT[U_CNT_REG_LEN-1:0];
 
@@ -72,6 +71,8 @@ reg[2:0] next_bit_cnt;
 reg[7:0] data_reg;
 reg[7:0] next_data_reg;
 
+reg next_data_ready_o;
+
 //////////////
 
 wire parity_odd = ^data_reg;
@@ -81,20 +82,18 @@ wire parity_odd = ^data_reg;
 always @(posedge clk_i) begin : state_transition
     if (!rst_n_i) begin
         current_state <= U_IDLE;
-        //cycle_cnt <= {U_CNT_REG_LEN{1'b0}};
         data_reg <= 0;
-        // busy_o <= 0;
         bit_cnt <= 0;
         parity_err_o <= 0;
         framing_err_o <= 0;
+        data_ready_o <= 0;
     end else begin
         current_state <= next_state;
-        //cycle_cnt <= next_cycle_cnt;
         data_reg <= next_data_reg;
-        // busy_o <= next_busy_o;
         bit_cnt <= next_bit_cnt;
         parity_err_o <= next_parity_err_o;
         framing_err_o <= next_framing_err_o;
+        data_ready_o <= next_data_ready_o;
     end
 end
 
@@ -120,18 +119,16 @@ assign data_o = data_reg;
 
 always @(*) begin : combo_logic
     next_state = current_state;
-    // next_busy_o = busy_o;
     next_bit_cnt = bit_cnt;
     next_parity_err_o = parity_err_o;
     next_framing_err_o = framing_err_o;
     next_data_reg = data_reg;
+    next_data_ready_o = data_ready_o;
 
     case (current_state)
         U_IDLE: begin
-            // next_busy_o = 0;
             // Data line pulled low, triggers the receive logic
             if (!data_i & enable_i) begin
-                // next_busy_o = 1;
                 next_state = U_START;
             end
         end
@@ -139,6 +136,7 @@ always @(*) begin : combo_logic
             if (cycle_cnt == cycles_per_bit_cmp_val) begin
                 if (sampled_data_i == 0) begin
                     next_bit_cnt = 0;
+                    next_data_ready_o = 0;
                     next_state = U_DATA;
                 end else begin
                     // didn't hold the START long enough
@@ -152,11 +150,13 @@ always @(*) begin : combo_logic
                 next_bit_cnt = bit_cnt + 1;
 
                 next_data_reg[bit_cnt] = sampled_data_i;
-            end
-            // Bit of idx 7 is 8th bit, so the last one (since increment is in next clk edge)
-            if (bit_cnt == 3'h7) begin
-                next_bit_cnt = 0;
-                next_state = parity_en_i ? U_PARITY : U_STOP;
+                // Bit of idx 7 is 8th bit, so the last one (since increment is in next clk edge)
+                if (bit_cnt == 3'h7) begin
+                    next_bit_cnt = 0;
+                    // Ready as in: data is "stable", doesn't mean valid ¯\_(ツ)_/¯
+                    next_data_ready_o = 1;
+                    next_state = parity_en_i ? U_PARITY : U_STOP;
+                end
             end
         end
         U_PARITY: begin
@@ -171,20 +171,18 @@ always @(*) begin : combo_logic
             end
         end
         U_STOP: begin
-            if (cycle_cnt == cycles_per_bit_cmp_val) begin
-                next_bit_cnt = bit_cnt + 1;
+            if (cycle_cnt == cycles_per_bit_cmp_val / 2 + 1) begin
                 if (sampled_data_i == 0) begin
                     $display("[%t] rcv invalid stop", $realtime);
                     next_framing_err_o = 1;
                     next_state = U_ERROR;
+                end else begin
+                    next_state = U_IDLE;
                 end
-            end
-            if (bit_cnt == ((stop_bits_i ? 'b1 : 'b0) + 'b1)) begin
-                next_state = U_IDLE;
             end
         end
         U_ERROR: begin
-            if (cycle_cnt == cycles_per_bit_cmp_val) begin
+            if (cycle_cnt == cycles_per_bit_cmp_val / 2) begin
                 $display("[%t] rcv error state", $realtime);
                 next_parity_err_o = 0;
                 next_framing_err_o = 0;

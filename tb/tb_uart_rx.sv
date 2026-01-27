@@ -27,6 +27,8 @@ logic[7:0] data_o;
 
 // Reception in progress
 logic busy_o;
+// Data is ready to read out
+logic data_ready_o;
 
 // Error signals
 logic parity_err_o;
@@ -54,6 +56,47 @@ initial begin
     $dumpvars(0, tb_uart_rx);
 end
 
+task simple_tx(logic[7:0] data, bit parity, bit stop);
+    $display("[%t] Tx start. Data %h:%c, parity %d, stop %d", $realtime, data, data, parity, stop);
+    parity_en_i = 1;
+    parity_sel_i = 1;
+
+    stop_bits_i = 0;
+
+    enable_i = '1;
+
+    // START
+    data_i = '0;
+    #DELAY
+
+    // DATA
+    for (int i = 0; i < $size(data); i++) begin
+        $display("[%t] Sending %h, idx %0d", $realtime, data[i], i);
+        data_i = data[i];
+        #DELAY;
+    end
+
+    // PARITY
+    data_i = parity;
+    #DELAY
+
+    // STOP
+    data_i = '1;
+    #DELAY
+
+    $display("[%t] done? %d", $realtime, busy_o);
+    assert (busy_o == 0)
+    else   $error("Rx not done!");
+
+    assert (data_ready_o == 1)
+    else   $error("data is not ready");
+
+    assert (data_o == data)
+    else   $error("output mismatch!");
+
+    $display("[%t] Read back: %h:%c", $realtime, data_o, data_o);
+endtask;
+
 initial begin
     #1 rst_n_i=1'bx; clk_i=1'bx;
 
@@ -64,52 +107,15 @@ initial begin
     data_i = 1;
     rst_n_i = 1;
 
-    parity_en_i = 1;
-    parity_sel_i = 1;
+    // Transactions are essentially happening back-to-back
+    // with no extra delays in between
+    simple_tx("H", '0, '1);
+    simple_tx("E", '1, '1);
+    simple_tx("L", '1, '1);
+    simple_tx("L", '1, '1);
+    simple_tx("O", '1, '1);
 
-    stop_bits_i = 0;
-
-    @(posedge clk_i);
-    @(negedge clk_i);
-
-    //tx_byte_i = 7'b1010011;
-
-    enable_i = '1;
-
-    // START
     data_i = '0;
-    #DELAY
-
-    // DATA
-    data_i = '1;
-    #DELAY
-    data_i = '1;
-    #DELAY
-    data_i = '0;
-    #DELAY
-    data_i = '0;
-    #DELAY
-    data_i = '1;
-    #DELAY
-    data_i = '0;
-    #DELAY
-    data_i = '1;
-
-    // PARITY
-    #DELAY
-    data_i = '1;
-
-    #DELAY
-    data_i = '1;
-    #DELAY
-    #DELAY
-
-    $display("done? %d", busy_o);
-    assert (busy_o == 0)
-    else   $error("Rx not done!");
-
-    #1
-    //start_i = '1;
 
     $finish(2);
 end

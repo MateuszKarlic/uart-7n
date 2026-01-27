@@ -23,19 +23,25 @@ Just a simple bench with asserts is my goal.
 
 Table with testpoints, and what they cover will be here.
 
+#### Receiver
+- [x] Simple receive - test several back-to-back transactions
+- [ ] Receive stress - send thousands of transactions, to see if there is any skew in bit count
+
+TODO: randomize clock skew, in case of imperfect baud (should handle it, since I deliberately reset receiver into IDLE at half the length of STOP)
+
 ## Roadmap
 
 A very rough roadmap of features I want to introduce.
 Each feature will be paired with a testbench.
 
-[] Uart Receive module
-[] Uart Transmit module
-[] Transmit/Receive FIFO
-[] Reception and Transmission error detection
-[] Programmable baud rate generator
-[] APB/other bus integration
-[] Automatic flow control lines
-[] Zephyr driver
+- [ ] Uart Receive module
+- [ ] Uart Transmit module
+- [ ] Transmit/Receive FIFO
+- [ ] Reception and Transmission error detection
+- [ ] Programmable baud rate generator
+- [ ] APB/other bus integration
+- [ ] Automatic flow control lines
+- [ ] Zephyr driver
 
 ## Integration
 
