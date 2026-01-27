@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-`default_nettype none;
+`default_nettype none
 
 module uart_rx # (
     parameter integer p_clk_speed_hz = 50_000_000,
@@ -23,7 +23,7 @@ module uart_rx # (
     input wire parity_sel_i,
 
     // Output decoded data byte
-    output reg[7:0] data_o,
+    output wire[7:0] data_o,
 
     // Reception in progress
     output wire busy_o,
@@ -31,12 +31,10 @@ module uart_rx # (
     output reg data_ready_o,
 
     // Error signals
-    output wire parity_err_o,
+    output reg parity_err_o,
     //output wire noise_err_o,
-    output wire framing_err_o
+    output reg framing_err_o
 );
-
-//localparam DATA_LEN_BITS = 8;
 
 localparam integer U_CYCLES_PER_BIT = p_clk_speed_hz / p_baud_rate;
 localparam integer U_CNT_REG_LEN = $clog2(U_CYCLES_PER_BIT) + 1;
@@ -61,7 +59,6 @@ reg[U_CNT_REG_LEN-1:0] cycle_cnt;
 
 reg[U_CNT_REG_LEN-1:0] cycles_per_bit_cmp_val = U_CYCLES_PER_BIT[U_CNT_REG_LEN-1:0];
 
-// reg next_busy_o;
 reg next_parity_err_o;
 reg next_framing_err_o;
 
