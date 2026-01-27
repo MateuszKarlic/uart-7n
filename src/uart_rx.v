@@ -73,6 +73,9 @@ reg[7:0] next_data_reg;
 
 reg next_data_ready_o;
 
+reg data_i_rd_old;
+reg data_i_rd;
+
 //////////////
 
 wire parity_odd = ^data_reg;
@@ -97,6 +100,12 @@ always @(posedge clk_i) begin : state_transition
     end
 end
 
+// A double register (or two-flip-flop) synchronizer to prevent CDC issues with input signal
+always @(posedge clk_i) begin : data_metastability
+    data_i_rd_old <= data_i;
+    data_i_rd <= data_i_rd_old;
+end
+
 always @(posedge clk_i) begin : cycle_counter_data_sample
     if (!rst_n_i || cycle_cnt == cycles_per_bit_cmp_val || current_state == U_IDLE) begin
         cycle_cnt <= {U_CNT_REG_LEN{1'b0}};
@@ -109,7 +118,7 @@ always @(posedge clk_i) begin : cycle_counter_data_sample
         cycle_cnt <= cycle_cnt + 1;
 
         if (cycle_cnt == cycles_per_bit_cmp_val / 2) begin
-            sampled_data_i <= data_i;
+            sampled_data_i <= data_i_rd;
         end
     end
 end
@@ -128,7 +137,7 @@ always @(*) begin : combo_logic
     case (current_state)
         U_IDLE: begin
             // Data line pulled low, triggers the receive logic
-            if (!data_i & enable_i) begin
+            if (!data_i_rd & enable_i) begin
                 next_state = U_START;
             end
         end
