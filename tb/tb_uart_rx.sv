@@ -84,7 +84,7 @@ task simple_tx(logic[7:0] data, bit parity, bit stop);
     data_i = '1;
     #DELAY
 
-    $display("[%t] done? %d", $realtime, busy_o);
+    $display("[%t] busy? %d", $realtime, busy_o);
     assert (busy_o == 0)
     else   $error("Rx not done!");
 
@@ -123,5 +123,3 @@ end
 endmodule
 
 /* verilator lint_on UNUSEDSIGNAL */
-
-`default_nettype wire

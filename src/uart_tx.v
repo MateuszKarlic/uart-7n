@@ -107,21 +107,21 @@ always @(*) begin
             if (enable_i) begin
                 // Start to transmit START bit
                 next_data_sent_o = 0;
-                next_state <= U_START;
+                next_state = U_START;
             end
         end
         U_START: begin
-            next_data_o <= 0;
+            next_data_o = 0;
             if (cycle_cnt == cycles_per_bit_cmp_val) begin
-                next_data_o <= data_i[0];
-                next_state <= U_DATA;
+                next_data_o = data_i[0];
+                next_state = U_DATA;
             end
         end
         U_DATA: begin
             if (cycle_cnt == cycles_per_bit_cmp_val) begin
                 next_bit_cnt = bit_cnt + 1;
                 // Bit of idx 7 is 8th bit, so the last one (since increment is in next clk edge)
-                next_data_o <= data_i[bit_cnt];
+                next_data_o = data_i[bit_cnt];
                 if (bit_cnt == 3'h7) begin
                     next_bit_cnt = 0;
                     next_data_sent_o = 1;
@@ -130,20 +130,21 @@ always @(*) begin
             end
         end
         U_PARITY: begin
-            next_data_o <= parity_sel_i ? parity_odd : ~parity_odd;
+            next_data_o = parity_sel_i ? parity_odd : ~parity_odd;
             if (cycle_cnt == cycles_per_bit_cmp_val) begin
-                next_state <= U_STOP;
+                next_state = U_STOP;
             end
         end
         U_STOP: begin
             if (cycle_cnt == cycles_per_bit_cmp_val) begin
                 next_bit_cnt = bit_cnt + 1;
 
-                if (bit_cnt == (1 + stop_sel_i)) begin
-                    next_state <= U_IDLE;
+                if (bit_cnt == (3'b001 + {2'b00, stop_sel_i})) begin
+                    next_state = U_IDLE;
                 end
             end
         end
+        default: $write("rx: unreachable state");
     endcase
 end
 
