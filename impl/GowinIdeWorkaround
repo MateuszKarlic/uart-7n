@@ -1,0 +1,17 @@
+1. This is used to run the IDE on Ubuntu 24:
+
+> QT_QPA_PLATFORM_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/qt5/plugins QT_QPA_PLATFORM=xcb QT_XCB_GL_INTEGRATION=none LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libfreetype.so.6 LD_LIBRARY_PATH=gowin_1.9.12/IDE/lib/ ./gw_ide
+
+2. "Bank 6 vccio(3.3)" error
+```
+ERROR  (CT1136) : Bank 6 vccio(3.3) is locked by other constraint or embedded port, conflicting BANK_VCCIO set by 'clk_i_ibuf' : IO_TYPE = LVCMOS18 in the same bank
+
+```
+To mitigate it, manually edit constraints file, e.g. like so:
+```
+IO_LOC "clk_i" 10;
+IO_PORT "clk_i" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
+```
+Something is broke in newer IDE (or was old IDE less restrictive)?
+The point is that BANK6 needs to be under 3.3VCC so `IO_TYPE` needs to be set to `LVCMOS33`.
+Old IDE didn't care about it.
