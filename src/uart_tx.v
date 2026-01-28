@@ -113,15 +113,14 @@ always @(*) begin
         U_START: begin
             next_data_o = 0;
             if (cycle_cnt == cycles_per_bit_cmp_val) begin
-                next_data_o = data_i[0];
                 next_state = U_DATA;
             end
         end
         U_DATA: begin
+            // Bit of idx 7 is 8th bit, so the last one (since increment is in next clk edge)
+            next_data_o = data_i[bit_cnt];
             if (cycle_cnt == cycles_per_bit_cmp_val) begin
                 next_bit_cnt = bit_cnt + 1;
-                // Bit of idx 7 is 8th bit, so the last one (since increment is in next clk edge)
-                next_data_o = data_i[bit_cnt];
                 if (bit_cnt == 3'h7) begin
                     next_bit_cnt = 0;
                     next_data_sent_o = 1;
@@ -136,6 +135,7 @@ always @(*) begin
             end
         end
         U_STOP: begin
+            next_data_o = 1;
             if (cycle_cnt == cycles_per_bit_cmp_val) begin
                 next_bit_cnt = bit_cnt + 1;
 
