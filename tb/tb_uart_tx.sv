@@ -37,6 +37,47 @@ uart_tx #(
     .p_baud_rate(BAUD)
 ) uart_tx_inst (.*);
 
+logic[7:0] rcv_data;
+wire parity_err, framing_err;
+
+wire any_err = parity_err | framing_err;
+
+// In ideal world, I'd have a VIP to decode the signal from the tx module
+// Unfortunately I'm poor, so I use the (verified) rx module in a "loopback" mode
+uart_rx #(
+    .p_clk_speed_hz(CLK_FREQ * SIM_TICK_PER_S),
+    .p_baud_rate(BAUD)
+) uart_rx_inst (
+    // Clk speed needs to be provided as parameter
+    .clk_i(clk_i),
+    // Sync reset, active low
+    .rst_n_i(rst_n_i),
+
+    // Enable the rx to exit idle state
+    .enable_i(1),
+
+    // Data line to decode
+    .data_i(data_o),
+
+    // Enable parity bit
+    .parity_en_i(1),
+    // Select parity type (odd, even)
+    .parity_sel_i(1),
+
+    // Output decoded data byte
+    .data_o(rcv_data),
+
+    // Reception in progress
+    .busy_o(),
+    // Data is ready to read out
+    .data_ready_o(),
+
+    // Error signals
+    .parity_err_o(parity_err),
+    //output wire noise_err_o,
+    .framing_err_o(framing_err)
+);
+
 always #(CLK_PERIOD / 2) clk_i = ~clk_i;
 
 initial begin
@@ -53,7 +94,15 @@ task simple_rx(logic[7:0] data, bit parity, bit stop);
 
     enable_i = 1;
 
-    #(DELAY * (8 + 1 + 1 + 1));
+    #(DELAY * (8 + 1 + 1 + 1 + 1));
+
+    assert (!any_err)
+    else   $error("error condition on reception");
+
+    assert (rcv_data == data)
+    else  $error($sformatf("[%t] Read back mismatch!: %h, expected %h", $realtime, rcv_data, data));
+
+    $display("[%t] Read back: %h, expected %h, OK!", $realtime, rcv_data, data);
 
 endtask;
 

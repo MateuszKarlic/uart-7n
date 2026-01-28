@@ -140,6 +140,7 @@ always @(*) begin
                 next_bit_cnt = bit_cnt + 1;
 
                 if (bit_cnt == (3'b001 + {2'b00, stop_sel_i})) begin
+                    next_bit_cnt = 0;
                     next_state = U_IDLE;
                 end
             end
