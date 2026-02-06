@@ -1,5 +1,3 @@
-
-
 module uart7n_top # (
     parameter integer p_clk_speed_hz = 50_000_000,
     parameter integer p_baud_rate = 9_600
@@ -39,6 +37,12 @@ module uart7n_top # (
 
     ////// Configuration signals //////
 
+    // Force UART to operate in loopback mode (tx connected to rx)
+    input wire loopback_i,
+    // Force UART to operate in loopback mode (rx connected to tx)
+    // be careful not to use two at once, or infinite cycle will happen
+    input wire inverted_loopback_i,
+
     // Enable parity bit
     input wire parity_en_i,
     // Select parity type (odd, even)
@@ -47,6 +51,9 @@ module uart7n_top # (
     // How many stop bits to send (0 - one, 1 - two)
     input wire stop_sel_i
 );
+
+wire rx_data_i = loopback_i ? data_o : data_i;
+wire tx_data_i = inverted_loopback_i ? data_rx_o : data_tx_i;
 
 uart_tx # (
     .p_clk_speed_hz(p_clk_speed_hz),
@@ -57,7 +64,7 @@ uart_tx # (
 
     .enable_i(enable_tx_i),
 
-    .data_i(data_tx_i),
+    .data_i(tx_data_i),
     .data_o(data_o),
 
     .parity_en_i(parity_en_i),
@@ -77,7 +84,7 @@ uart_rx # (
 
     .enable_i(enable_rx_i),
 
-    .data_i(data_i),
+    .data_i(rx_data_i),
 
     .parity_en_i(parity_en_i),
     .parity_sel_i(parity_sel_i),
