@@ -53,7 +53,7 @@ module uart7n_top # (
 );
 
 wire rx_data_i = loopback_i ? data_o : data_i;
-wire tx_data_i = inverted_loopback_i ? data_rx_o : data_tx_i;
+wire[7:0] tx_data_i = inverted_loopback_i ? data_rx_o : data_tx_i;
 
 uart_tx # (
     .p_clk_speed_hz(p_clk_speed_hz),
