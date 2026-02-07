@@ -55,7 +55,7 @@ reg next_data_o;
 reg [7:0] data_i_captured;
 reg [7:0] next_data_i_captured;
 
-wire parity_odd = ^data_i;
+wire parity_even = ^data_i;
 
 reg[U_CNT_REG_LEN-1:0] cycle_cnt;
 
@@ -135,7 +135,7 @@ always @(*) begin
             end
         end
         U_PARITY: begin
-            next_data_o = parity_sel_i ? parity_odd : ~parity_odd;
+            next_data_o = parity_sel_i ? parity_even : ~parity_even;
             if (cycle_cnt == cycles_per_bit_cmp_val) begin
                 next_state = U_STOP;
             end
