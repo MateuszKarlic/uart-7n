@@ -52,12 +52,14 @@ reg[`U_STATE_BITS-1:0] current_state;
 reg[`U_STATE_BITS-1:0] next_state;
 
 reg next_data_o;
+reg [7:0] data_i_captured;
+reg [7:0] next_data_i_captured;
 
 wire parity_odd = ^data_i;
 
 reg[U_CNT_REG_LEN-1:0] cycle_cnt;
 
-reg[U_CNT_REG_LEN-1:0] cycles_per_bit_cmp_val = U_CYCLES_PER_BIT[U_CNT_REG_LEN-1:0];
+wire[U_CNT_REG_LEN-1:0] cycles_per_bit_cmp_val = U_CYCLES_PER_BIT[U_CNT_REG_LEN-1:0];
 
 reg[2:0] bit_cnt;
 reg[2:0] next_bit_cnt;
@@ -75,11 +77,13 @@ always @(posedge clk_i) begin
         data_o <= 1;
         bit_cnt <= 0;
         data_sent_o <= 0;
+        data_i_captured <= 0;
     end else begin
         current_state <= next_state;
         data_o <= next_data_o;
         bit_cnt <= next_bit_cnt;
         data_sent_o <= next_data_sent_o;
+        data_i_captured <= next_data_i_captured;
     end
 end
 
@@ -101,11 +105,13 @@ always @(*) begin
     next_data_o = data_o;
     next_bit_cnt = bit_cnt;
     next_data_sent_o = data_sent_o;
+    next_data_i_captured = data_i_captured;
 
     case (current_state)
         U_IDLE: begin
             if (enable_i) begin
                 // Start to transmit START bit
+                next_data_i_captured = data_i;
                 next_data_sent_o = 0;
                 next_state = U_START;
             end
@@ -118,7 +124,7 @@ always @(*) begin
         end
         U_DATA: begin
             // Bit of idx 7 is 8th bit, so the last one (since increment is in next clk edge)
-            next_data_o = data_i[bit_cnt];
+            next_data_o = data_i_captured[bit_cnt];
             if (cycle_cnt == cycles_per_bit_cmp_val) begin
                 next_bit_cnt = bit_cnt + 1;
                 if (bit_cnt == 3'h7) begin
@@ -139,7 +145,7 @@ always @(*) begin
             if (cycle_cnt == cycles_per_bit_cmp_val) begin
                 next_bit_cnt = bit_cnt + 1;
 
-                if (bit_cnt == (3'b001 + {2'b00, stop_sel_i})) begin
+                if (bit_cnt == {2'b00, stop_sel_i}) begin
                     next_bit_cnt = 0;
                     next_state = U_IDLE;
                 end

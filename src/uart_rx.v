@@ -57,7 +57,7 @@ reg sampled_data_i;
 
 reg[U_CNT_REG_LEN-1:0] cycle_cnt;
 
-reg[U_CNT_REG_LEN-1:0] cycles_per_bit_cmp_val = U_CYCLES_PER_BIT[U_CNT_REG_LEN-1:0];
+wire[U_CNT_REG_LEN-1:0] cycles_per_bit_cmp_val = U_CYCLES_PER_BIT[U_CNT_REG_LEN-1:0];
 
 reg next_parity_err_o;
 reg next_framing_err_o;
@@ -75,7 +75,7 @@ reg data_i_rd;
 
 //////////////
 
-wire parity_odd = ^data_reg;
+wire parity_even = ^data_reg;
 
 //////////////
 
@@ -167,7 +167,7 @@ always @(*) begin : combo_logic
         end
         U_PARITY: begin
             if (cycle_cnt == cycles_per_bit_cmp_val) begin
-                if (sampled_data_i == parity_sel_i ? parity_odd : ~parity_odd) begin
+                if (sampled_data_i == parity_sel_i ? parity_even : ~parity_even) begin
                     next_state = U_STOP;
                 end else begin
                     $display("[%t] rcv parity error", $realtime);

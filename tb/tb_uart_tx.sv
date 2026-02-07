@@ -94,7 +94,8 @@ task simple_rx(logic[7:0] data, bit parity, bit stop);
 
     enable_i = 1;
 
-    #(DELAY * (8 + 1 + 1 + 1 + 1));
+    // 8 data bits + START + PARITY + STOP
+    #(DELAY * (8 + 1 + 1 + 1));
 
     assert (!any_err)
     else   $error("error condition on reception");
@@ -118,7 +119,7 @@ initial begin
 
     // Transactions are essentially happening back-to-back
     // with no extra delays in between
-    simple_rx("H", '0, '1);
+    simple_rx("H", '1, '1);
     simple_rx("E", '1, '1);
     simple_rx("L", '1, '1);
     simple_rx("L", '1, '1);
