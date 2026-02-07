@@ -1,4 +1,9 @@
+# Uart-7n
+
 This is a free and OpenSource UART implementation I made in my spare time.
+The name - Uart-7n was supposed to mean - UART written in 7 nights (a magic and cool number).
+While most basic stuff for receive and transmit state machines indeed were written in 7 nights/evenings, debugging what didn't work took much longer.
+And this is nowhere near completion at this moment.
 
 My main motivation was learning about Verilog and Digital Design.
 After working a bit around Design Verification field, I decided to try my hands at creating a simple circuit of my own.
@@ -37,6 +42,7 @@ Each feature will be paired with a testbench.
 
 - [x] Uart Receive module
 - [x] Uart Transmit module
+- [x] Real FPGA echo (what you write is what you get back) demo
 - [ ] Transmit/Receive FIFO
 - [ ] Reception and Transmission error detection
 - [ ] Programmable baud rate generator
