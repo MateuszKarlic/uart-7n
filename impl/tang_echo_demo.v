@@ -14,6 +14,13 @@ module tang_echo_demo
     output wire framing_err_o
 );
 
+wire clkout;
+Gowin_rPLL your_instance_name(
+        .clkout(clkout), //output clkout
+        .clkin(clk_i) //input clkin
+    );
+
+
 // Convert "level" send_data to "pulse"
 reg send_data, send_data_P;
 always @(posedge clk_i) begin : level_to_pulse
@@ -37,7 +44,7 @@ uart7n_top # (
     .p_baud_rate(115_200)
 ) xuart7n_top (
     // Clk speed needs to be provided as parameter
-    .clk_i(clk_i),
+    .clk_i(clkout),
     // Sync reset, active low
     .rst_n_i(~rst_n_i),
 
