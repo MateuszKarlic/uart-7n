@@ -4,22 +4,19 @@ module tang_echo_demo
     input wire clk_i,
     input wire rst_n_i,
     output wire data_o,
-    output wire data2_o,
 
     output wire rx_busy_o,
     output wire tx_busy_o,
     output wire rx_data_ready_o,
     output wire tx_data_sent_o,
 
-    output wire[7:0] data_readback,
-    input wire s1
+    output wire parity_err_o,
+    output wire framing_err_o
 );
-
-assign data2_o = data_o;
 
 // Convert "level" send_data to "pulse"
 reg send_data, send_data_P;
-always @(posedge clk_i) begin
+always @(posedge clk_i) begin : level_to_pulse
     if(rst_n_i) begin
         send_data <= 0;
         send_data_P <= 0;
@@ -61,10 +58,13 @@ uart7n_top # (
 
     .loopback_i(0),
     .inverted_loopback_i(1),
-    .data_tx_i(8'b01010011),
+
+    // Error signals
+    .parity_err_o(parity_err_o),
+    .framing_err_o(framing_err_o),
 
     // Enable parity bit
-    .parity_en_i(0),
+    .parity_en_i(1),
     // Select parity type (odd, even)
     .parity_sel_i(0),
 
