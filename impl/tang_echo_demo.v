@@ -1,7 +1,7 @@
 module tang_echo_demo
 (
     input wire data_i,
-    input wire clk_i,
+    //input wire clk_i,
     input wire rst_n_i,
     output wire data_o,
 
@@ -15,15 +15,21 @@ module tang_echo_demo
 );
 
 wire clkout;
-Gowin_rPLL your_instance_name(
-        .clkout(clkout), //output clkout
-        .clkin(clk_i) //input clkin
-    );
 
+// 250 MHz / 2 = 125 MHz clk goes out
+Gowin_OSC xGowin_OSC(
+    .oscout(oscout) //output oscout
+);
+
+// Outputs 50 MHz clock
+Gowin_rPLL xGowin_rPLL(
+    .clkout(clkout), //output clkout
+    .clkin(oscout) //input clkin
+);
 
 // Convert "level" send_data to "pulse"
 reg send_data, send_data_P;
-always @(posedge clk_i) begin : level_to_pulse
+always @(posedge clkout) begin : level_to_pulse
     if(rst_n_i) begin
         send_data <= 0;
         send_data_P <= 0;
