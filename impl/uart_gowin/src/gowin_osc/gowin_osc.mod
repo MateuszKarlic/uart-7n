@@ -7,7 +7,7 @@
 
 -mod_name Gowin_OSC
 -file_name gowin_osc
--path /home/darthjarjar/nice-uart/impl/uart_gowin/src/gowin_osc/
+-path ${PROJ_ROOT}/impl/uart_gowin/src/gowin_osc/
 -type OSC
 -file_type vlg
 -dev_type GW2AR-18C
