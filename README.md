@@ -24,6 +24,16 @@ My goal is to use pure SystemVerilog testbenches for verification, without any f
 There is no need for complications as the design is very human.
 Just a simple bench with asserts is my goal.
 
+To build and run the testbenches you need [Verilator](https://veripool.org/guide/latest/index.html) (the simulator) and GNU Make.
+I currently use `Verilator 5.040`.
+* To run a TB, navigate to `tb` directory and execute `make targets` to see list of available tests.
+* To build a specific test, execute `make test-name.tb`.
+* To run a specific test, execute `make test-name.run`.
+
+You might also want to view the waveforms.
+For this, you can either use the classic [GTKWave](https://gtkwave.sourceforge.net/) or more modern [Surfer](https://surfer-project.org/).
+Both are popular, free and Open Source tools for inspecting the waveforms.
+
 ### Testpoints
 
 Table with testpoints, and what they cover will be here.

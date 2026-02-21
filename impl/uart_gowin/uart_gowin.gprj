@@ -11,6 +11,7 @@
         <File path="${PROJ_ROOT}/src/uart7n_top.v" type="file.verilog" enable="1"/>
         <File path="${PROJ_ROOT}/src/uart_rx.v" type="file.verilog" enable="1"/>
         <File path="${PROJ_ROOT}/src/uart_tx.v" type="file.verilog" enable="1"/>
+        <File path="${PROJ_ROOT}/src/uart_state.vh" type="file.other" enable="1"/>
         <File path="src/uart_gowin.cst" type="file.cst" enable="1"/>
         <File path="src/uart_gowin.sdc" type="file.sdc" enable="1"/>
     </FileList>
