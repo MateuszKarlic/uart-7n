@@ -1,3 +1,16 @@
+# Verilated output
 obj_dir/
+# Waveform traces
 *.vcd
+# Misc binary stuff
 *.out
+# Misc coverage stuff
+*.coverage
+*.dat
+*.info
+# Coverage reports
+report/
+# Surfer state
+*.surf.ron
+# FPGA Bitstream
+*.fs

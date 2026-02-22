@@ -1,3 +1,4 @@
+/* verilator coverage_off*/
 `include "timings.svh"
 
 module tb_uart_tx;

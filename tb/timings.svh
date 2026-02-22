@@ -1,3 +1,5 @@
+/* verilator coverage_off*/
+
 `timescale 1ns/1ps
 
 // 50_000_000 Hz

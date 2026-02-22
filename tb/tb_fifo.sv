@@ -1,4 +1,5 @@
 
+/* verilator coverage_off*/
 /* verilator lint_off UNUSEDPARAM */
 `include "timings.svh"
 /* verilator lint_on UNUSEDPARAM */
