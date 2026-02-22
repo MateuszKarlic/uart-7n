@@ -27,17 +27,22 @@ module depth_fifo #(
 localparam PTR_SIZE = $clog2(p_depth);
 
 reg[PTR_SIZE - 1: 0] read_ptr, write_ptr;
-assign read_valid_o = ~(read_ptr == write_ptr);
+
+reg last_op_read;
+
+// Valid is negation of empty
+assign read_valid_o = (read_ptr != write_ptr) | ~last_op_read;
+
+// If we loop back into read, then the Q is full
+assign full_o = (write_ptr == read_ptr) & ~last_op_read;
 
 // The actual backing memory
 // TODO: verify if I can make it better by using FPGA primitives (just for fun)
-reg[p_word_size - 1 : 0] data[p_depth - 1];
+reg[p_word_size - 1 : 0] data[p_depth];
 
 // Continuous read - but actually needs to check `valid` to know if it's OK to read
 assign data_o = data[read_ptr];
 
-// If we loop back into read, then the Q is full
-assign full_o = (write_ptr + 1) == read_ptr;
 
 ///////////////////////
 
@@ -60,6 +65,18 @@ always @(posedge clk_i) begin
             write_ptr <= write_ptr + 1;
             data[write_ptr] <= data_i;
         end
+    end
+end
+
+// Track last operation
+always @(posedge clk_i) begin
+    if (!rst_n_i) begin
+        last_op_read <= 1'b1;
+    end else begin
+        if (write_enable_i & ~full_o)
+            last_op_read <= 1'b0;
+        else if(read_enable_i & read_valid_o)
+            last_op_read <= 1'b1;
     end
 end
 

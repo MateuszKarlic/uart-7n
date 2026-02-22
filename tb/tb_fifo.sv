@@ -70,15 +70,14 @@ task read_data(output fifo_word_t output_val, input fifo_word_t expected_val);
     read_enable_i = 0;
 endtask
 
-task try_overflow_write_data();
-
-endtask
-
 /* verilator lint_off UNUSEDSIGNAL */
 initial begin
     fifo_word_t wrd1 = get_rand_word();
     fifo_word_t wrd2 = get_rand_word();
     fifo_word_t wrd3 = get_rand_word();
+    fifo_word_t wrd4 = get_rand_word();
+    fifo_word_t wrd5 = get_rand_word();
+    fifo_word_t wrd6 = get_rand_word();
     fifo_word_t outp;
 
     #1 rst_n_i=1'bx; clk_i=1'bx;
@@ -101,6 +100,49 @@ initial begin
     read_data(outp, wrd1);
     read_data(outp, wrd2);
 
+    write_data_and_cmp(wrd1, wrd3);
+    write_data_and_cmp(wrd2, wrd3);
+    write_data_and_cmp(wrd3, wrd3);
+    write_data_and_cmp(wrd4, wrd3);
+
+    write_data_and_cmp(wrd1, wrd3);
+    write_data_and_cmp(wrd2, wrd3);
+
+    assert (full_o != 1)
+    else  $error($sformatf("[%t] FIFO full!", $realtime));
+
+    write_data_and_cmp(wrd5, wrd3);
+
+    assert (full_o == 1)
+    else  $error($sformatf("[%t] FIFO not full!", $realtime));
+
+    // This one will be dropped
+    write_data_and_cmp(wrd6, wrd3);
+
+    assert (full_o == 1)
+    else  $error($sformatf("[%t] FIFO not full!", $realtime));
+
+    read_data(outp, wrd3);
+
+    assert (full_o != 1)
+    else  $error($sformatf("[%t] FIFO full!", $realtime));
+
+    read_data(outp, wrd1);
+    read_data(outp, wrd2);
+    read_data(outp, wrd3);
+    read_data(outp, wrd4);
+
+    read_data(outp, wrd1);
+    read_data(outp, wrd2);
+    read_data(outp, wrd5);
+
+    assert (read_valid_o != 1)
+    else  $error($sformatf("[%t] FIFO not empty!", $realtime));
+
+    // Empty FIFO, looped back (but read is marked as invalid)
+    read_data(outp, wrd3);
+
+    $display($sformatf("[%t] TEST SUCCEEDED", $realtime));
     $finish(2);
 end
 
